@@ -106,7 +106,7 @@ public class PrincipalVista extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(escritorio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
@@ -131,7 +131,6 @@ public class PrincipalVista extends javax.swing.JFrame {
         form.setVisible(true);
         form.setSize(800, 750);
         escritorio.moveToFront(form);
-        //ñam
     }//GEN-LAST:event_jRBMFormularioActionPerformed
 
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
@@ -143,12 +142,27 @@ public class PrincipalVista extends javax.swing.JFrame {
     }//GEN-LAST:event_jRBMFormulario1ActionPerformed
 
     private void jConsultarDietaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jConsultarDietaActionPerformed
+    ConsultarVista consu = new ConsultarVista();
+    consu.setSize(800, 750);
+    consu.setVisible(true);
+    escritorio.add(consu);
+    consu.setLocation(
+        (escritorio.getWidth() - consu.getWidth()) / 2,
+        (escritorio.getHeight() - consu.getHeight()) / 2
+    );
 
     }//GEN-LAST:event_jConsultarDietaActionPerformed
 
     private void jMenu4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu4ActionPerformed
-        new ConsultarVista().setVisible(true);
-        
+    ConsultarVista consu = new ConsultarVista();
+    consu.setSize(800, 750);
+    consu.setVisible(true);
+    escritorio.add(consu);
+    consu.setLocation(
+        (escritorio.getWidth() - consu.getWidth()) / 2,
+        (escritorio.getHeight() - consu.getHeight()) / 2
+    );
+
     }//GEN-LAST:event_jMenu4ActionPerformed
 
 

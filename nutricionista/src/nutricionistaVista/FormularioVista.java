@@ -48,6 +48,7 @@ public class FormularioVista extends javax.swing.JPanel {
 
         botones = new javax.swing.ButtonGroup();
         botonesCondicion = new javax.swing.ButtonGroup();
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         label1 = new java.awt.Label();
         jPanel1 = new javax.swing.JPanel();
@@ -353,78 +354,106 @@ public class FormularioVista extends javax.swing.JPanel {
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         
-        
-        try{
-            String nombre = inputNombre.getText();
-            String apellido = inputApellido.getText();
-            Integer edad =  Integer.parseInt(inputEdad.getText());
-            Integer altura =  Integer.parseInt(inputAltura.getText()) ;
-            float pesoActual =  Float.parseFloat(inputPesoActual.getText());
-            float pesoBuscado =  Float.parseFloat(inputPesoBuscado.getText());
-            
-            
-            //Funcion para la seleccion de botones en genero
-            
-            botones.add(inputHombre);
-            botones.add(inputMujer);
-            
-            String sexo = "";
-            if(inputHombre.isSelected()){
-                sexo = "Hombre";
-            } else if (inputMujer.isSelected()){
-            sexo = "Mujer";
-            } else if (inputHombre.isSelected() && inputMujer.isSelected()){
-            JOptionPane.showMessageDialog(this, "Por favor, seleccione solo un sexo");
-            inputHombre.setSelected(false);
-            inputMujer.setSelected(false);
-            } else {
-            JOptionPane.showMessageDialog(this, "El campo genero no puede quedar vacio");
-            }
-            
- 
-            //Funcion para la seleccion de condicionEspecial y concatenacion de la misma en caso de ser varias
-            botonesCondicion.add(inputCeliaco2);
-            botonesCondicion.add(inputVegano2);
-            botonesCondicion.add(inputIntolerante2);
-            botonesCondicion.add(inputVegetariano2);
-            
-            String condicionEspecial = "";
-            
-            if(inputCeliaco2.isSelected()){
-                condicionEspecial = "Celiaco";
-            }
-            if(inputVegano2.isSelected()){
-                condicionEspecial += " / Vegano";  
-            }
-            if(inputIntolerante2.isSelected()){
-                condicionEspecial += " / Intolerante a la lactosa";  
-            }
-            if(inputVegetariano2.isSelected()){
-                condicionEspecial += " / Vegetariano";  
+       try {
+    String nombre = inputNombre.getText();
+    String apellido = inputApellido.getText();
+    String edadText = inputEdad.getText();
+    String alturaText = inputAltura.getText();
+    String pesoActualText = inputPesoActual.getText();
+    String pesoBuscadoText = inputPesoBuscado.getText();
+
+    // Verificar si los campos de texto están vacíos
+    if (nombre.isEmpty() || apellido.isEmpty() || edadText.isEmpty() || alturaText.isEmpty() || 
+        pesoActualText.isEmpty() || pesoBuscadoText.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Los campos no pueden estar vacíos");
+        return; 
+    }
+
+    // Verifica que los campos solo tengan letras
+    if (!nombre.matches("[a-zA-Z]+")) {
+        JOptionPane.showMessageDialog(this, "En el campo 'nombre' solo se permiten letras");
+        return;
+    }
+    if (!apellido.matches("[a-zA-Z]+")) {
+        JOptionPane.showMessageDialog(this, "En el campo 'apellido' solo se permiten letras");
+        return;
+    }
+
+    // Verificar que los campos solo permitan numeros
+    try {
+        Integer edad = Integer.parseInt(edadText);
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "El campo 'edad' solo acepta números enteros");
+        return;
+    }
+    
+    try {
+        Integer altura = Integer.parseInt(alturaText);
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "El campo 'altura' solo acepta números");
+        return;
+    }
+    
+    try {
+        float pesoActual = Float.parseFloat(pesoActualText);
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "El campo 'peso actual' solo acepta números");
+        return;
+    }
+
+    try {
+        float pesoBuscado = Float.parseFloat(pesoBuscadoText);
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "El campo 'peso buscado' solo acepta números");
+        return;
+    }
+    
+    //Verifica que seleccione un genero
+
+    String sexo = "";
+    if (inputHombre.isSelected() && inputMujer.isSelected()) {
+        JOptionPane.showMessageDialog(this, "Solo puede seleccionar un género");
+        return;
+    } else if (inputHombre.isSelected()) {
+        sexo = "Hombre";
+    } else if (inputMujer.isSelected()) {
+        sexo = "Mujer";
+    } else {
+        JOptionPane.showMessageDialog(this, "El campo 'género' es obligatorio");
+        return;
+    }
+
+    String condicionEspecial = "";
+    if (inputCeliaco2.isSelected()) {
+        condicionEspecial = "Celiaco";
+    }
+    if (inputVegano2.isSelected()) {
+        condicionEspecial += " / Vegano";  
+    }
+    if (inputIntolerante2.isSelected()) {
+        condicionEspecial += " / Intolerante a la lactosa";  
+    }
+    if (inputVegetariano2.isSelected()) {
+        condicionEspecial += " / Vegetariano";  
+    }
+
+    if (pacienteActual == null) {
+        pacienteActual = new Paciente(nombre, apellido, Integer.parseInt(edadText), Integer.parseInt(alturaText), 
+                sexo, Float.parseFloat(pesoActualText), Float.parseFloat(pesoBuscadoText), condicionEspecial);
+        pacData.agregarPaciente(pacienteActual);
+    } else {
+        pacienteActual.setNombre(nombre);
+        pacienteActual.setApellido(apellido);
+        pacienteActual.setAltura(Integer.parseInt(alturaText));
+        pacienteActual.setSexo(sexo);
+        pacienteActual.setPesoActual(Float.parseFloat(pesoActualText));
+        pacienteActual.setPesoBuscado(Float.parseFloat(pesoBuscadoText));
+        pacienteActual.setCondicionEspecial(condicionEspecial);
+    }
+
+} catch (Exception e) {
+    JOptionPane.showMessageDialog(null, "ERROR");
 }
-            
-            
-
-            /*SE CREA EL PACIENTE EN EL OBJETO DE LA VISTA Y SE ASIGNA*/
-
-            if (pacienteActual == null){
-
-                pacienteActual = new Paciente(nombre, apellido, edad, altura, sexo, pesoActual, pesoBuscado, condicionEspecial);
-                pacData.agregarPaciente(pacienteActual);
-            } else {
-                pacienteActual.setNombre(nombre);
-                pacienteActual.setApellido(apellido);
-                pacienteActual.setAltura(altura);
-                pacienteActual.setSexo(sexo);
-                pacienteActual.setPesoActual(pesoActual);
-                pacienteActual.setPesoBuscado(pesoBuscado);
-                pacienteActual.setCondicionEspecial(condicionEspecial);
-
-            }
-
-        }catch(Exception e){
-            JOptionPane.showMessageDialog(null, " ERROR ");
-        }
 
     }//GEN-LAST:event_btnGuardarActionPerformed
 
@@ -444,8 +473,6 @@ public class FormularioVista extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_inputNombreActionPerformed
 
-    
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup botones;
@@ -453,6 +480,7 @@ public class FormularioVista extends javax.swing.JPanel {
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnSalir;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField inputAltura;
     private javax.swing.JTextField inputApellido;
     private javax.swing.JRadioButton inputCeliaco2;
