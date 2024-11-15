@@ -131,6 +131,7 @@ public class PrincipalVista extends javax.swing.JFrame {
         form.setVisible(true);
         form.setSize(800, 750);
         escritorio.moveToFront(form);
+        //ñam
     }//GEN-LAST:event_jRBMFormularioActionPerformed
 
     private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
