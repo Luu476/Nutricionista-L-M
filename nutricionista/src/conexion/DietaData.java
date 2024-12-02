@@ -19,8 +19,8 @@ public class DietaData {
     }
 
     public void agregarDieta(Dieta dieta) {
-        String sql = "INSERT INTO dieta (codDieta, nombreD, fechaIni, fechaFin, pesoIni, pesoFinal,  estado, nroPaciente, tipoDeDieta) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO dieta (codDieta, nombreD, fechaIni, fechaFin, pesoIni, pesoFinal, estado, totalCalorias, nroPaciente) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try {
             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

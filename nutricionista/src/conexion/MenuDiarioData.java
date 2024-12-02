@@ -21,7 +21,7 @@ public class MenuDiarioData {
     }
     
     public void agregarMenuDiario(MenuDiario menudiario) {
-    String sql = "INSERT INTO menu_diario (codMenu, dia, caloriasDelMenu, estado, dieta_id) VALUES (?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO menu_diario (codMenu, dia, estado, caloriasDeMenu, codDieta) VALUES (?, ?, ?, ?, ?)";
 
     try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         ps.setInt(1, menudiario.getCodMenu());
