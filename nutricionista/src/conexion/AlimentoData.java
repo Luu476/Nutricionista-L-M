@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -51,12 +52,12 @@ public class AlimentoData {
                 String detalle = rs.getString("detalle");
                 boolean baja = rs.getBoolean("baja");
                 boolean aptoVegetariano = rs.getBoolean("aptoVegetariano");
-                boolean libreDeTACC = rs.getBoolean("libreDeTACC");
+                boolean libreDeTACC = rs.getBoolean("libredeTACC");
                 boolean lacteo = rs.getBoolean("lacteo");
                
 
                 // Crea un objeto Alimento con los datos obtenidos
-                alimento = new Alimento( codComida, nombre,caloriasPorPorcion,tipo,detalle,baja,aptoVegetariano,libreDeTACC,lacteo);
+                alimento = new Alimento(nombre,caloriasPorPorcion,tipo,detalle,baja,aptoVegetariano,libreDeTACC,lacteo);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al obtener el alimento: " + e.getMessage());
@@ -84,5 +85,32 @@ public class AlimentoData {
         return 0; // Retornar 0 si no se encuentran las calorías
     }
 
+    public void agregarAlimento(Alimento alimento){
+        String sql = "INSERT INTO `alimento`(codComida, nombre, tipoComida, caloriasPor100g, detalle, baja, aptoVegetariano, libreTACC, lacteo) VALUES"
+                + " (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try{
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(2, alimento.getNombre());
+            ps.setString(3, alimento.getTipo());
+            ps.setInt(4, (int) alimento.getCaloriasPorPorcion());
+            ps.setString(5, alimento.getDetalle());
+            ps.setBoolean(6, alimento.isBaja());
+            ps.setBoolean(6, alimento.isAptoVegetariano());
+            ps.setBoolean(6, alimento.isLibreDeTACC());
+            ps.setBoolean(6, alimento.isLacteo());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            
+            if(rs.next()){
+                alimento.setCodComida(rs.getInt(1));
+                JOptionPane.showMessageDialog(null," - Alimento añadido con exito.");
+            }
+            ps.close();
+            
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, " Error al acceder a la tabla Alimento "+ex.getMessage());
+        }                   
+    }
 
 }

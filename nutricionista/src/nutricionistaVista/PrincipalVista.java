@@ -27,9 +27,10 @@ public class PrincipalVista extends javax.swing.JFrame {
         jRBMFormulario = new javax.swing.JRadioButtonMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jRBMFormulario1 = new javax.swing.JRadioButtonMenuItem();
-        jMenu3 = new javax.swing.JMenu();
+        DietaAutomatica = new javax.swing.JMenu();
+        jRadioButtonMenuItem1 = new javax.swing.JRadioButtonMenuItem();
         jMenu4 = new javax.swing.JMenu();
-        jConsultarDieta = new javax.swing.JMenuItem();
+        modificarPaciente = new javax.swing.JRadioButtonMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -80,8 +81,23 @@ public class PrincipalVista extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu2);
 
-        jMenu3.setText("Dieta Automatica");
-        jMenuBar1.add(jMenu3);
+        DietaAutomatica.setText("Dieta Automatica");
+        DietaAutomatica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DietaAutomaticaActionPerformed(evt);
+            }
+        });
+
+        jRadioButtonMenuItem1.setSelected(true);
+        jRadioButtonMenuItem1.setText("Crear Dieta");
+        jRadioButtonMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButtonMenuItem1ActionPerformed(evt);
+            }
+        });
+        DietaAutomatica.add(jRadioButtonMenuItem1);
+
+        jMenuBar1.add(DietaAutomatica);
 
         jMenu4.setText("Modificar");
         jMenu4.addActionListener(new java.awt.event.ActionListener() {
@@ -90,13 +106,14 @@ public class PrincipalVista extends javax.swing.JFrame {
             }
         });
 
-        jConsultarDieta.setText("Modificar Paciente");
-        jConsultarDieta.addActionListener(new java.awt.event.ActionListener() {
+        modificarPaciente.setSelected(true);
+        modificarPaciente.setText("Modificar Paciente");
+        modificarPaciente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jConsultarDietaActionPerformed(evt);
+                modificarPacienteActionPerformed(evt);
             }
         });
-        jMenu4.add(jConsultarDieta);
+        jMenu4.add(modificarPaciente);
 
         jMenuBar1.add(jMenu4);
 
@@ -141,18 +158,6 @@ public class PrincipalVista extends javax.swing.JFrame {
        new DietaVista().setVisible(true);
     }//GEN-LAST:event_jRBMFormulario1ActionPerformed
 
-    private void jConsultarDietaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jConsultarDietaActionPerformed
-    ConsultarVista consu = new ConsultarVista();
-    consu.setSize(800, 750);
-    consu.setVisible(true);
-    escritorio.add(consu);
-    consu.setLocation(
-        (escritorio.getWidth() - consu.getWidth()) / 2,
-        (escritorio.getHeight() - consu.getHeight()) / 2
-    );
-
-    }//GEN-LAST:event_jConsultarDietaActionPerformed
-
     private void jMenu4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu4ActionPerformed
     ConsultarVista consu = new ConsultarVista();
     consu.setSize(800, 750);
@@ -165,6 +170,32 @@ public class PrincipalVista extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jMenu4ActionPerformed
 
+    private void DietaAutomaticaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DietaAutomaticaActionPerformed
+
+    }//GEN-LAST:event_DietaAutomaticaActionPerformed
+
+    private void jRadioButtonMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem1ActionPerformed
+    DietaAutomatica diet = new DietaAutomatica();
+    diet.setSize(1300, 650);
+    diet.setVisible(true);
+    escritorio.add(diet);
+    diet.setLocation(
+        (escritorio.getWidth() - diet.getWidth()) / 2,
+        (escritorio.getHeight() - diet.getHeight()) / 2
+    );
+    }//GEN-LAST:event_jRadioButtonMenuItem1ActionPerformed
+
+    private void modificarPacienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modificarPacienteActionPerformed
+    ConsultarVista modi = new ConsultarVista();
+    modi.setSize(550, 650);
+    modi.setVisible(true);
+    escritorio.add(modi);
+    modi.setLocation(
+    (escritorio.getWidth() - modi.getWidth()) / 2,
+    (escritorio.getHeight() - modi.getHeight()) / 2
+    );
+    }//GEN-LAST:event_modificarPacienteActionPerformed
+
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -175,14 +206,15 @@ public class PrincipalVista extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenu DietaAutomatica;
     private javax.swing.JDesktopPane escritorio;
-    private javax.swing.JMenuItem jConsultarDieta;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JRadioButtonMenuItem jRBMFormulario;
     private javax.swing.JRadioButtonMenuItem jRBMFormulario1;
+    private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem1;
+    private javax.swing.JRadioButtonMenuItem modificarPaciente;
     // End of variables declaration//GEN-END:variables
 }

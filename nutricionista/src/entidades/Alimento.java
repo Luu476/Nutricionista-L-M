@@ -16,7 +16,7 @@ public class Alimento {
     private boolean libreDeTACC;
     private boolean lacteo;
 
-    public Alimento(int codComida, String nombre, double caloriasPorPorcion, String tipo, String detalle, boolean baja, boolean aptoVegetariano, boolean libreDeTACC, boolean lacteo) {
+    public Alimento(String nombre, double caloriasPorPorcion, String tipo, String detalle, boolean baja, boolean aptoVegetariano, boolean libreDeTACC, boolean lacteo) {
         this.codComida = codComida;
         this.nombre = nombre;
         this.caloriasPorPorcion = caloriasPorPorcion;
@@ -27,7 +27,7 @@ public class Alimento {
         this.libreDeTACC = libreDeTACC;
         this.lacteo = lacteo;
     }
-    
+
     
     public int getCodComida() {
         return codComida;
@@ -141,7 +141,7 @@ public class Alimento {
         }
         return filtrados;
     }
-    
 
+    
 
 }
