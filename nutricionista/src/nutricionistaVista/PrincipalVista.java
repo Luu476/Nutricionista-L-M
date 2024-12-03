@@ -27,10 +27,12 @@ public class PrincipalVista extends javax.swing.JFrame {
         jRBMFormulario = new javax.swing.JRadioButtonMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jRBMFormulario1 = new javax.swing.JRadioButtonMenuItem();
-        DietaAutomatica = new javax.swing.JMenu();
         jRadioButtonMenuItem1 = new javax.swing.JRadioButtonMenuItem();
+        DietaAutomatica = new javax.swing.JMenu();
+        jRadioButtonMenuItem3 = new javax.swing.JRadioButtonMenuItem();
         jMenu4 = new javax.swing.JMenu();
         modificarPaciente = new javax.swing.JRadioButtonMenuItem();
+        jRadioButtonMenuItem2 = new javax.swing.JRadioButtonMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,15 +81,6 @@ public class PrincipalVista extends javax.swing.JFrame {
         });
         jMenu2.add(jRBMFormulario1);
 
-        jMenuBar1.add(jMenu2);
-
-        DietaAutomatica.setText("Dieta Automatica");
-        DietaAutomatica.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DietaAutomaticaActionPerformed(evt);
-            }
-        });
-
         jRadioButtonMenuItem1.setSelected(true);
         jRadioButtonMenuItem1.setText("Crear Dieta");
         jRadioButtonMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -95,7 +88,25 @@ public class PrincipalVista extends javax.swing.JFrame {
                 jRadioButtonMenuItem1ActionPerformed(evt);
             }
         });
-        DietaAutomatica.add(jRadioButtonMenuItem1);
+        jMenu2.add(jRadioButtonMenuItem1);
+
+        jMenuBar1.add(jMenu2);
+
+        DietaAutomatica.setText("Buscar");
+        DietaAutomatica.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                DietaAutomaticaActionPerformed(evt);
+            }
+        });
+
+        jRadioButtonMenuItem3.setSelected(true);
+        jRadioButtonMenuItem3.setText("Buscar Alimento");
+        jRadioButtonMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButtonMenuItem3ActionPerformed(evt);
+            }
+        });
+        DietaAutomatica.add(jRadioButtonMenuItem3);
 
         jMenuBar1.add(DietaAutomatica);
 
@@ -114,6 +125,15 @@ public class PrincipalVista extends javax.swing.JFrame {
             }
         });
         jMenu4.add(modificarPaciente);
+
+        jRadioButtonMenuItem2.setSelected(true);
+        jRadioButtonMenuItem2.setText("Agregar Alimento");
+        jRadioButtonMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioButtonMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(jRadioButtonMenuItem2);
 
         jMenuBar1.add(jMenu4);
 
@@ -146,7 +166,7 @@ public class PrincipalVista extends javax.swing.JFrame {
         FormularioVista form = new FormularioVista();   
         escritorio.add(form);
         form.setVisible(true);
-        form.setSize(800, 750);
+        form.setSize(600, 700);
         escritorio.moveToFront(form);
     }//GEN-LAST:event_jRBMFormularioActionPerformed
 
@@ -196,6 +216,24 @@ public class PrincipalVista extends javax.swing.JFrame {
     );
     }//GEN-LAST:event_modificarPacienteActionPerformed
 
+    private void jRadioButtonMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem3ActionPerformed
+        escritorio.removeAll();
+        escritorio.repaint();
+        BuscarAlimento buscar = new BuscarAlimento();   
+        escritorio.add(buscar);
+        buscar.setVisible(true);
+        buscar.setSize(900, 500);
+    }//GEN-LAST:event_jRadioButtonMenuItem3ActionPerformed
+
+    private void jRadioButtonMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem2ActionPerformed
+        escritorio.removeAll();
+        escritorio.repaint();
+        AgregarAlimento agregar = new AgregarAlimento();   
+        escritorio.add(agregar);
+        agregar.setVisible(true);
+        agregar.setSize(600, 500);
+    }//GEN-LAST:event_jRadioButtonMenuItem2ActionPerformed
+
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -215,6 +253,8 @@ public class PrincipalVista extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem jRBMFormulario;
     private javax.swing.JRadioButtonMenuItem jRBMFormulario1;
     private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem1;
+    private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem2;
+    private javax.swing.JRadioButtonMenuItem jRadioButtonMenuItem3;
     private javax.swing.JRadioButtonMenuItem modificarPaciente;
     // End of variables declaration//GEN-END:variables
 }
