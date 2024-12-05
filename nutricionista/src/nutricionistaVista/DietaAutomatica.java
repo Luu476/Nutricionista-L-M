@@ -8,6 +8,7 @@ import conexion.AlimentoData;
 import conexion.Conexion;
 import conexion.pacienteData;
 import entidades.Alimento;
+import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.PreparedStatement;
@@ -17,10 +18,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 
 public class DietaAutomatica extends javax.swing.JPanel {
@@ -93,15 +97,21 @@ public void cargarDatosPaciente(String nombrePaciente) {
     }
 }
 public void cargarDietaAutomatica() {
-    // Listas de JTextField para cada comida
+    // Listas de JTextField y JSpinner para cada comida
     JTextField[] desayunoFields = {DesayunoDia1, DesayunoDia2, DesayunoDia3, DesayunoDia4, DesayunoDia5};
+    JSpinner[] desayunoSpinners = {SpinnerDesayunoDia1, SpinnerDesayunoDia2, SpinnerDesayunoDia3, SpinnerDesayunoDia4, SpinnerDesayunoDia5};
     JTextField[] almuerzoFields = {AlmuerzoDia1, AlmuerzoDia2, AlmuerzoDia3, AlmuerzoDia4, AlmuerzoDia5};
+    JSpinner[] almuerzoSpinners = {SpinnerAlmuerzoDia1, SpinnerAlmuerzoDia2, SpinnerAlmuerzoDia3, SpinnerAlmuerzoDia4, SpinnerAlmuerzoDia5};
     JTextField[] meriendaFields = {MeriendaDia1, MeriendaDia2, MeriendaDia3, MeriendaDia4, MeriendaDia5};
+    JSpinner[] meriendaSpinners = {SpinnerMeriendaDia1, SpinnerMeriendaDia2, SpinnerMeriendaDia3, SpinnerMeriendaDia4, SpinnerMeriendaDia5};
     JTextField[] cenaFields = {CenaDia1, CenaDia2, CenaDia3, CenaDia4, CenaDia5};
+    JSpinner[] cenaSpinners = {SpinnerCenaDia1, SpinnerCenaDia2, SpinnerCenaDia3, SpinnerCenaDia4, SpinnerCenaDia5};
     JTextField[] colacionesFields = {ColacionDia1, ColacionDia2, ColacionDia3, ColacionDia4, ColacionDia5};
+    JSpinner[] colacionesSpinners = {SpinnerColacionDia1, SpinnerColacionDia2, SpinnerColacionDia3, SpinnerColacionDia4, SpinnerColacionDia5};
 
     // Arrays de comidas
     JTextField[][] comidas = {desayunoFields, almuerzoFields, meriendaFields, cenaFields, colacionesFields};
+    JSpinner[][] spinners = {desayunoSpinners, almuerzoSpinners, meriendaSpinners, cenaSpinners, colacionesSpinners};
 
     try {
         // Obtener el peso inicial y el peso deseado desde los JTextField
@@ -111,10 +121,14 @@ public void cargarDietaAutomatica() {
         // Determinar el objetivo del paciente (bajar o subir de peso)
         boolean bajarDePeso = pesoDeseado < pesoInicial;
 
-        // Cargar los alimentos según el objetivo del paciente
-        for (JTextField[] comidaFields : comidas) {
-            cargarAlimentosParaComida(comidaFields, bajarDePeso);
+        // Cargar los alimentos y configurar los spinners según el objetivo
+        for (int i = 0; i < comidas.length; i++) {
+            cargarAlimentosYSpinners(comidas[i], spinners[i], bajarDePeso);
         }
+
+        // Calcular las calorías totales
+        calcularCaloriasTotales(comidas, spinners, CaloriasEnTotal);
+        calcularPesoEnTotal(comidas, spinners, PesoEnTotal);
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(null, "Error al cargar la dieta automática: " + e.toString());
     } catch (NumberFormatException e) {
@@ -122,41 +136,33 @@ public void cargarDietaAutomatica() {
     }
 }
 
-private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarDePeso) throws SQLException {
+private void cargarAlimentosYSpinners(JTextField[] comidaFields, JSpinner[] spinners, boolean bajarDePeso) throws SQLException {
     // Obtener la condición alimenticia del paciente desde el JTextField
-    String condicionAlimenticia = outputCondicion2.getText().toLowerCase(); // Por ejemplo: "lacteo", "vegetariano", "tacc", etc.
+    String condicionAlimenticia = outputCondicion2.getText().toLowerCase();
 
-    // Filtrar la consulta SQL dependiendo de la condición alimenticia
-    StringBuilder sqlBuilder = new StringBuilder("SELECT nombre, caloriasPor100g, lacteo, aptoVegetariano, libreTACC FROM alimento WHERE ");
-    
-    // Agregar filtros según la condición alimenticia
-    if (condicionAlimenticia.contains("Intolerante a la lactosa")) {
+    // Construir la consulta SQL
+    StringBuilder sqlBuilder = new StringBuilder("SELECT nombre, caloriasPor100g FROM alimento WHERE ");
+    if (condicionAlimenticia.contains("intolerante a la lactosa")) {
         sqlBuilder.append("lacteo = 1 AND ");
     }
     if (condicionAlimenticia.contains("vegetariano")) {
         sqlBuilder.append("aptoVegetariano = 1 AND ");
     }
-    if (condicionAlimenticia.contains("Celiaco")) {
-        sqlBuilder.append("libreTACC = 1 AND ");
+    if (condicionAlimenticia.contains("celiaco")) {
+        sqlBuilder.append("libredeTACC = 1 AND ");
     }
-
-    // Eliminar el último "AND" si es que hay alguno
     if (sqlBuilder.toString().endsWith(" AND ")) {
         sqlBuilder.delete(sqlBuilder.length() - 4, sqlBuilder.length());
     }
+    sqlBuilder.append(" ORDER BY caloriasPor100g ").append(bajarDePeso ? "ASC" : "DESC").append(" LIMIT ?");
 
-    // Ordenar según el objetivo (bajar o subir de peso)
-    String sql = "SELECT nombre, caloriasPor100g FROM alimento ORDER BY caloriasPor100g " + (bajarDePeso ? "ASC" : "DESC") + " LIMIT ?";
+    String sql = sqlBuilder.toString();
     PreparedStatement ps = con.prepareStatement(sql);
-
-    // Establecer el número de alimentos a cargar
     ps.setInt(1, comidaFields.length);
-
 
     ResultSet rs = ps.executeQuery();
     ArrayList<String> alimentos = new ArrayList<>();
 
-    // Guardar los nombres de los alimentos en la lista
     while (rs.next()) {
         alimentos.add(rs.getString("nombre"));
     }
@@ -164,12 +170,80 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
     // Mezclar aleatoriamente los alimentos
     Collections.shuffle(alimentos);
 
-    // Asignar los alimentos aleatorios a los JTextField
+    // Asignar los alimentos y configurar los spinners
+    Random random = new Random(); // Para generar números aleatorios
+
     for (int i = 0; i < comidaFields.length && i < alimentos.size(); i++) {
         comidaFields[i].setText(alimentos.get(i));
+
+        // Generar un valor aleatorio entre 0 y 3
+        int valorAleatorio = random.nextInt(4); // 4 es exclusivo, generará valores entre 0 y 3
+
+        // Configurar el spinner con el valor aleatorio
+        SpinnerNumberModel model = new SpinnerNumberModel(valorAleatorio, 0, 3, 1);
+        spinners[i].setModel(model);
+        spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i])); // Hacer que no sea editable manualmente
     }
 }
 
+private void calcularCaloriasTotales(JTextField[][] comidas, JSpinner[][] spinners, JTextField outputCaloriasTotales) throws SQLException {
+    float totalCalorias = 0;
+
+    for (int i = 0; i < comidas.length; i++) { // Recorrer todas las comidas
+        for (int j = 0; j < comidas[i].length; j++) { // Recorrer los días de cada comida
+            String alimento = comidas[i][j].getText();
+            if (!alimento.isEmpty()) { // Si hay un alimento en el campo
+                int porciones = (int) spinners[i][j].getValue();
+
+                // Consultar las calorías del alimento en la base de datos
+                String sql = "SELECT caloriasPor100g FROM alimento WHERE nombre = ?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, alimento);
+
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    float caloriasPor100g = rs.getFloat("caloriasPor100g");
+                    totalCalorias += caloriasPor100g * porciones; // Calcular las calorías totales por este alimento
+                }
+            }
+        }
+    }
+
+    // Actualizar el JTextField con las calorías totales
+    outputCaloriasTotales.setText(String.format("%.2f", totalCalorias));
+}
+
+private void calcularPesoEnTotal(JTextField[][] comidas, JSpinner[][] spinners, JTextField outputPesoTotal) throws SQLException {
+    float totalCalorias = 0;
+
+    // Calcular las calorías totales consumidas en 5 días
+    for (int i = 0; i < comidas.length; i++) { // Recorrer todas las comidas (desayuno, almuerzo, etc.)
+        for (int j = 0; j < comidas[i].length; j++) { // Recorrer los días de cada comida
+            String alimento = comidas[i][j].getText();
+            if (!alimento.isEmpty()) { 
+                int porciones = (int) spinners[i][j].getValue();
+
+                // Consultar las calorías del alimento en la base de datos
+                String sql = "SELECT caloriasPor100g FROM alimento WHERE nombre = ?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, alimento);
+
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    float caloriasPor100g = rs.getFloat("caloriasPor100g");
+                    totalCalorias += caloriasPor100g * porciones; // Calcular las calorías totales por este alimento
+                }
+            }
+        }
+    }
+
+    // Convertir calorías totales a peso (en kg)
+    float pesoGanadoOPerdido = totalCalorias / 7700; // 7700 calorías = 1 kg
+    String resultado = String.format("%.2f", pesoGanadoOPerdido); // Formatear a 2 decimales
+
+    // Mostrar el peso ganado o perdido en el JTextField
+    outputPesoTotal.setText(resultado + " kg");
+}
     public void cargarDatosProfesional(){
    
         nutriNombre2.setText("Juanjo");
@@ -309,9 +383,9 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        CaloriasEnTotal = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        PesoEnTotal = new javax.swing.JTextField();
         jPanel9 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
@@ -589,25 +663,25 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(DesayunoDia4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                            .addComponent(DesayunoDia5, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(DesayunoDia3))
+                        .addGap(7, 7, 7)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(SpinnerDesayunoDia4, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(SpinnerDesayunoDia3, javax.swing.GroupLayout.Alignment.TRAILING))
+                            .addComponent(SpinnerDesayunoDia5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(DesayunoDia2, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                            .addComponent(DesayunoDia2, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
                             .addComponent(DesayunoDia1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(SpinnerDesayunoDia1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(SpinnerDesayunoDia2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(DesayunoDia5, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(DesayunoDia4, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(DesayunoDia3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(SpinnerDesayunoDia3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(SpinnerDesayunoDia4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(SpinnerDesayunoDia5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .addComponent(SpinnerDesayunoDia1)
+                            .addComponent(SpinnerDesayunoDia2)))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -628,7 +702,7 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DesayunoDia4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(SpinnerDesayunoDia4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(19, 19, 19)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(DesayunoDia5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(SpinnerDesayunoDia5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -659,7 +733,7 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(AlmuerzoDia2)
+                            .addComponent(AlmuerzoDia2, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                             .addComponent(AlmuerzoDia1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -669,7 +743,7 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(AlmuerzoDia5, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(AlmuerzoDia4, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(AlmuerzoDia3, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))
+                            .addComponent(AlmuerzoDia3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(SpinnerAlmuerzoDia3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -909,12 +983,12 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
         jLabel11.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel11.setText("Calorias en Total:");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        CaloriasEnTotal.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel12.setText("Peso Final:");
+        jLabel12.setText("Peso a Calcular:  ");
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        PesoEnTotal.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jPanel9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -957,20 +1031,20 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(127, 127, 127)
-                        .addComponent(jLabel17)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel18)
-                        .addGap(175, 175, 175)
-                        .addComponent(jLabel19)
-                        .addGap(182, 182, 182)
-                        .addComponent(jLabel20)
-                        .addGap(92, 92, 92))
-                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(127, 127, 127)
+                                .addComponent(jLabel17)
+                                .addGap(164, 164, 164)
+                                .addComponent(jLabel18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel19)
+                                .addGap(189, 189, 189)
+                                .addComponent(jLabel20)
+                                .addGap(152, 152, 152))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -985,42 +1059,40 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(130, 130, 130)
-                                .addComponent(jLabel23)
-                                .addGap(148, 148, 148)
-                                .addComponent(jLabel11)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(32, 32, 32)
-                        .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(73, 73, 73)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(23, 23, 23)
-                                        .addComponent(jLabel12)))
-                                .addContainerGap())
+                                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 47, Short.MAX_VALUE))
+                            .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(32, 32, 32)
+                                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(48, 48, 48))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGap(146, 146, 146))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(70, 70, 70)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jLabel12)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(CaloriasEnTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(jLabel11)
+                                                .addGroup(layout.createSequentialGroup()
+                                                    .addGap(1, 1, 1)
+                                                    .addComponent(PesoEnTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(FINAL)
-                                        .addGap(183, 183, 183))))))))
+                                        .addGap(190, 190, 190))))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(126, 126, 126)
+                        .addComponent(jLabel23)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1034,11 +1106,10 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel18)
-                                .addComponent(jLabel17))
+                                .addComponent(jLabel17)
+                                .addComponent(jLabel19))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel20)
-                                    .addComponent(jLabel19))
+                                .addComponent(jLabel20)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
@@ -1058,9 +1129,9 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                             .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jLabel23)
-                                .addGap(18, 18, 18)
+                                .addGap(24, 24, 24)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1074,19 +1145,20 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
                                         .addComponent(jLabel10))
                                     .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(9, 9, 9)
+                                .addGap(97, 97, 97)
+                                .addComponent(FINAL))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(22, 22, 22)
                                 .addComponent(jLabel11)
                                 .addGap(18, 18, 18)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(11, 11, 11)
-                                .addComponent(FINAL)
-                                .addGap(7, 7, 7)
+                                .addComponent(CaloriasEnTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(37, 37, 37)
                                 .addComponent(jLabel12)
                                 .addGap(18, 18, 18)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(PesoEnTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(20, 20, 20)))))
+                                .addGap(16, 16, 16)))))
                 .addContainerGap(20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1140,6 +1212,7 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
     private javax.swing.JTextField AlmuerzoDia4;
     private javax.swing.JTextField AlmuerzoDia5;
     private javax.swing.JComboBox<String> CBPaciente2;
+    private javax.swing.JTextField CaloriasEnTotal;
     private javax.swing.JTextField CenaDia1;
     private javax.swing.JTextField CenaDia2;
     private javax.swing.JTextField CenaDia3;
@@ -1162,6 +1235,7 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
     private javax.swing.JTextField MeriendaDia3;
     private javax.swing.JTextField MeriendaDia4;
     private javax.swing.JTextField MeriendaDia5;
+    private javax.swing.JTextField PesoEnTotal;
     private javax.swing.JSpinner SpinnerAlmuerzoDia1;
     private javax.swing.JSpinner SpinnerAlmuerzoDia2;
     private javax.swing.JSpinner SpinnerAlmuerzoDia3;
@@ -1228,8 +1302,6 @@ private void cargarAlimentosParaComida(JTextField[] comidaFields, boolean bajarD
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField nutriApellido2;
     private javax.swing.JTextField nutriEmail2;
     private javax.swing.JTextField nutriNombre2;

@@ -26,6 +26,8 @@ public class PrincipalVista extends javax.swing.JFrame {
 
         escritorio = new javax.swing.JDesktopPane();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jRBMFormulario = new javax.swing.JRadioButtonMenuItem();
@@ -41,29 +43,50 @@ public class PrincipalVista extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         escritorio.setBackground(new java.awt.Color(51, 255, 51));
+        escritorio.setBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(102, 255, 51), null));
 
         jLabel1.setBackground(new java.awt.Color(255, 153, 153));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/nutrilogola.png"))); // NOI18N
 
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/signo-de-interrogacion.png"))); // NOI18N
+
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/manzana.png"))); // NOI18N
+
         escritorio.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        escritorio.setLayer(jLabel2, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        escritorio.setLayer(jLabel3, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout escritorioLayout = new javax.swing.GroupLayout(escritorio);
         escritorio.setLayout(escritorioLayout);
         escritorioLayout.setHorizontalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, escritorioLayout.createSequentialGroup()
-                .addContainerGap(762, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28))
+                .addGap(0, 428, Short.MAX_VALUE)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 430, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addGap(207, 207, 207))
         );
         escritorioLayout.setVerticalGroup(
             escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(escritorioLayout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addComponent(jLabel1)
-                .addContainerGap(285, Short.MAX_VALUE))
+                .addGroup(escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(escritorioLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(escritorioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(escritorioLayout.createSequentialGroup()
+                        .addGap(78, 78, 78)
+                        .addComponent(jLabel1)))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
 
+        jMenuBar1.setBackground(new java.awt.Color(0, 255, 153));
+
+        jMenu1.setBackground(new java.awt.Color(51, 255, 255));
         jMenu1.setText("Formulario");
         jMenu1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -90,7 +113,7 @@ public class PrincipalVista extends javax.swing.JFrame {
         });
 
         jRBMFormulario1.setSelected(true);
-        jRBMFormulario1.setText("Dieta");
+        jRBMFormulario1.setText("Dieta Manual");
         jRBMFormulario1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRBMFormulario1ActionPerformed(evt);
@@ -99,7 +122,7 @@ public class PrincipalVista extends javax.swing.JFrame {
         jMenu2.add(jRBMFormulario1);
 
         jRadioButtonMenuItem1.setSelected(true);
-        jRadioButtonMenuItem1.setText("Crear Dieta");
+        jRadioButtonMenuItem1.setText("Dieta Automatica");
         jRadioButtonMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButtonMenuItem1ActionPerformed(evt);
@@ -178,8 +201,6 @@ public class PrincipalVista extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenu1ActionPerformed
 
     private void jRBMFormularioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRBMFormularioActionPerformed
-        escritorio.removeAll();
-        escritorio.repaint();
         FormularioVista form = new FormularioVista();   
         escritorio.add(form);
         form.setVisible(true);
@@ -212,43 +233,40 @@ public class PrincipalVista extends javax.swing.JFrame {
     }//GEN-LAST:event_DietaAutomaticaActionPerformed
 
     private void jRadioButtonMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem1ActionPerformed
-    DietaAutomatica diet = new DietaAutomatica();
-    diet.setSize(1187, 638);
-    diet.setVisible(true);
-    escritorio.add(diet);
-    diet.setLocation(
-        (escritorio.getWidth() - diet.getWidth()) / 2,
-        (escritorio.getHeight() - diet.getHeight()) / 2
-    );
+
+        DietaAutomatica auto = new DietaAutomatica();   
+        escritorio.add(auto);
+        auto.setVisible(true);
+        auto.setSize(1250, 650);
+        escritorio.moveToFront(auto);
     }//GEN-LAST:event_jRadioButtonMenuItem1ActionPerformed
 
     private void modificarPacienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modificarPacienteActionPerformed
-    ConsultarVista modi = new ConsultarVista();
-    modi.setSize(550, 650);
-    modi.setVisible(true);
-    escritorio.add(modi);
-    modi.setLocation(
-    (escritorio.getWidth() - modi.getWidth()) / 2,
-    (escritorio.getHeight() - modi.getHeight()) / 2
-    );
+        escritorio.removeAll();
+        escritorio.repaint();
+        ConsultarVista consu = new ConsultarVista();   
+        escritorio.add(consu);
+        consu.setVisible(true);
+        consu.setSize(900, 500);
+        escritorio.moveToFront(consu);
     }//GEN-LAST:event_modificarPacienteActionPerformed
 
     private void jRadioButtonMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem3ActionPerformed
-        escritorio.removeAll();
-        escritorio.repaint();
-        BuscarAlimento buscar = new BuscarAlimento();   
-        escritorio.add(buscar);
-        buscar.setVisible(true);
-        buscar.setSize(900, 500);
+
+        BuscarAlimento busca = new BuscarAlimento();   
+        escritorio.add(busca);
+        busca.setVisible(true);
+        busca.setSize(5000, 1000);
+        escritorio.moveToFront(busca);
     }//GEN-LAST:event_jRadioButtonMenuItem3ActionPerformed
 
     private void jRadioButtonMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonMenuItem2ActionPerformed
-        escritorio.removeAll();
-        escritorio.repaint();
+
         AgregarAlimento agregar = new AgregarAlimento();   
         escritorio.add(agregar);
         agregar.setVisible(true);
         agregar.setSize(600, 500);
+        escritorio.moveToFront(agregar);
     }//GEN-LAST:event_jRadioButtonMenuItem2ActionPerformed
 
 
@@ -264,6 +282,8 @@ public class PrincipalVista extends javax.swing.JFrame {
     private javax.swing.JMenu DietaAutomatica;
     private javax.swing.JDesktopPane escritorio;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu4;
